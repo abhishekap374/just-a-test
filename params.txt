@@ -1,0 +1,30 @@
+[
+	{
+		"ParameterKey": "Environment",
+		"ParameterValue": "development"
+	},
+  	{
+		"ParameterKey": "ProjectName",
+		"ParameterValue": "cloudboost"
+	},
+  	{
+		"ParameterKey": "ApplicationName",
+		"ParameterValue": "sap"
+	},
+	{
+		"ParameterKey": "Attribute1",
+		"ParameterValue": "Album"
+	},
+	{
+		"ParameterKey": "Attribute2",
+		"ParameterValue": "Artist"
+	},
+	{
+		"ParameterKey": "Attribute3",
+		"ParameterValue": "Sales"
+	},
+	{
+		"ParameterKey": "Attribute4",
+		"ParameterValue": "NumberOfSongs"
+	}
+]

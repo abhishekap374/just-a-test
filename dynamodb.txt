@@ -1,0 +1,240 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description": "Cloudformation template to create DynamoDb Table",
+  "Parameters": {
+    "Environment": {
+      "Description": "Enter Environment Name",
+      "Default": "development",
+      "AllowedValues": [
+        "production",
+        "preprod",
+        "quality-analysis",
+        "development"
+      ],
+      "Type": "String"
+    },
+    "ProjectName": {
+      "Description": "Project name",
+      "Default": "cb",
+      "Type": "String"
+    },
+    "ApplicationName": {
+      "Description": "Name of the app for which DynamoDb Table is being created",
+      "Default": "app",
+      "Type": "String"
+    },
+    "Attribute1": {
+    	"Default": "Album",
+    	"AllowedPattern": "^[a-zA-Z]*$",
+    	"Type": "String"
+    },
+    "Attribute2": {
+    	"Default": "Artist",
+    	"AllowedPattern": "^[a-zA-Z]*$",
+    	"Type": "String"
+    },
+    "Attribute3": {
+    	"Default": "Sales",
+    	"AllowedPattern": "^[a-zA-Z]*$",
+    	"Type": "String"
+    },
+    "Attribute4": {
+    	"Default": "NumberOfSongs",
+    	"AllowedPattern": "^[a-zA-Z]*$",
+    	"Type": "String"
+    }
+  },
+  "Mappings": {
+    "EnvType": {
+      "development": {
+        "Type": "dev"
+      },
+      "preprod": {
+        "Type": "preprod"
+      },
+      "production": {
+        "Type": "prod"
+      },
+      "quality-analysis": {
+        "Type": "qa"
+      }
+    },
+    "Region": {
+      "us-east-1": {
+        "code": "use1"
+      },
+      "us-east-2": {
+        "code": "use2"
+      },
+      "us-west-1": {
+        "code": "usw1"
+      },
+      "us-west-2": {
+        "code": "usw2"
+      },
+      "ca-central-1": {
+        "code": "cac1"
+      },
+      "eu-central-1": {
+        "code": "euc1"
+      },
+      "eu-west-1": {
+        "code": "euw1"
+      },
+      "eu-west-2": {
+        "code": "euw2"
+      },
+      "eu-west-3": {
+        "code": "euw3"
+      },
+      "ap-northeast-1": {
+        "code": "apne1"
+      },
+      "ap-northeast-2": {
+        "code": "apne2"
+      },
+      "ap-southeast-1": {
+        "code": "apse1"
+      },
+      "ap-southeast-2": {
+        "code": "apse2"
+      },
+      "ap-south-1": {
+        "code": "aps1"
+      },
+      "sa-east-1": {
+        "code": "sae1"
+      }
+    }
+  },
+  "Resources" : {
+    "myDynamoDBTable" : {
+      "Type" : "AWS::DynamoDB::Table",
+      "Properties" : {
+        "AttributeDefinitions" : [
+          {
+            "AttributeName" : {"Ref": "Attribute1"},
+            "AttributeType" : "S"   
+          },
+          {
+            "AttributeName" : {"Ref": "Attribute2"},
+            "AttributeType" : "S"
+          },
+          {
+            "AttributeName" : {"Ref": "Attribute3"},
+            "AttributeType" : "N"
+          },
+          {
+            "AttributeName" : {"Ref": "Attribute4"},
+            "AttributeType" : "N"
+          }
+        ],
+        "KeySchema" : [
+          {
+            "AttributeName" : {"Ref": "Attribute1"},
+            "KeyType" : "HASH"
+          },
+          {
+            "AttributeName" : {"Ref": "Attribute2"},
+            "KeyType" : "RANGE"
+          }
+        ],
+        "ProvisionedThroughput" : {
+          "ReadCapacityUnits" : "5",
+          "WriteCapacityUnits" : "5"
+        },
+        "TableName" : {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "ProjectName"
+              },
+              {
+                "Ref": "ApplicationName"
+              },
+              {
+                "Fn::FindInMap": [
+                  "Region",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "code"
+                ]
+              },
+              {
+                "Fn::FindInMap": [
+                  "EnvType",
+                  {
+                    "Ref": "Environment"
+                  },
+                  "Type"
+                ]
+              },
+              "ddb"
+            ]
+          ]
+        },
+        "GlobalSecondaryIndexes" : [{
+          "IndexName" : "myGSI",
+          "KeySchema" : [
+            {
+              "AttributeName" : {"Ref": "Attribute3"},
+              "KeyType" : "HASH"
+            },
+            {
+              "AttributeName" : {"Ref": "Attribute2"},
+              "KeyType" : "RANGE"
+            }
+          ],                         
+          "Projection" : {
+            "NonKeyAttributes" : [{"Ref": "Attribute1"}, {"Ref": "Attribute4"}],
+            "ProjectionType" : "INCLUDE"
+          },
+          "ProvisionedThroughput" : {
+            "ReadCapacityUnits" : "5",
+            "WriteCapacityUnits" : "5"
+          }
+        },
+        {
+          "IndexName" : "myGSI2",
+          "KeySchema" : [
+            {
+              "AttributeName" : {"Ref": "Attribute4"},
+              "KeyType" : "HASH"
+            },
+            {
+              "AttributeName" : {"Ref": "Attribute3"},
+              "KeyType" : "RANGE"
+            }
+          ],                         
+          "Projection" : {
+            "NonKeyAttributes" : [{"Ref": "Attribute1"}, {"Ref": "Attribute2"}],
+            "ProjectionType" : "INCLUDE"
+          },
+          "ProvisionedThroughput" : {
+            "ReadCapacityUnits" : "5",
+            "WriteCapacityUnits" : "5"
+          }
+        }],
+        "LocalSecondaryIndexes" :[{
+          "IndexName" : "myLSI",
+          "KeySchema" : [
+            {
+              "AttributeName": {"Ref": "Attribute1"},
+              "KeyType" : "HASH"
+            },
+            {
+              "AttributeName" : {"Ref": "Attribute3"},
+              "KeyType" : "RANGE"
+            }
+          ],                           
+          "Projection" : {
+            "NonKeyAttributes" : [{"Ref": "Attribute2"}, {"Ref": "Attribute4"}],
+            "ProjectionType" : "INCLUDE"
+          }
+        }]
+      }
+    }
+  }
+}
